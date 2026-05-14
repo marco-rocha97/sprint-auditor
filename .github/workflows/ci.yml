@@ -19,7 +19,7 @@ jobs:
     steps:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
 
-      - uses: astral-sh/setup-uv@a28efb20eed2512422ae53aed9871bc0f6e4db1f
+      - uses: astral-sh/setup-uv@v1
         with:
           enable-cache: true
 
@@ -31,7 +31,7 @@ jobs:
     steps:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
 
-      - uses: astral-sh/setup-uv@a28efb20eed2512422ae53aed9871bc0f6e4db1f
+      - uses: astral-sh/setup-uv@v1
         with:
           enable-cache: true
 
@@ -43,7 +43,7 @@ jobs:
     steps:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
 
-      - uses: astral-sh/setup-uv@a28efb20eed2512422ae53aed9871bc0f6e4db1f
+      - uses: astral-sh/setup-uv@v1
         with:
           enable-cache: true
 
