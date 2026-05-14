@@ -1,5 +1,3 @@
-import pytest
-
 from src.sprint_auditor.ingestao import ingerir_artefatos
 from src.sprint_auditor.modelos import Artefato, TipoArtefato
 
