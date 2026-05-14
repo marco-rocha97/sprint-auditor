@@ -14,6 +14,7 @@ _ORDEM_CATEGORIA: dict[CategoriaAlerta, int] = {
     CategoriaAlerta.DESVIO_LIMIAR: 0,
     CategoriaAlerta.DETERIORACAO_CONSISTENTE: 1,
     CategoriaAlerta.BLOQUEIO_LINGUISTICO: 2,
+    CategoriaAlerta.SILENCIO: 3,
 }
 
 _LABEL_CONFIANCA: dict[NivelConfianca, str] = {
@@ -26,6 +27,7 @@ _LABEL_CATEGORIA: dict[CategoriaAlerta, str] = {
     CategoriaAlerta.DESVIO_LIMIAR: "[DESVIO]",
     CategoriaAlerta.DETERIORACAO_CONSISTENTE: "[PIORA]",
     CategoriaAlerta.BLOQUEIO_LINGUISTICO: "[BLOQUEIO]",
+    CategoriaAlerta.SILENCIO: "[SILÊNCIO]",
 }
 
 
@@ -95,10 +97,12 @@ def _formatar_alerta(alerta: Alerta) -> str:
         ⚠ DESVIO_LIMIAR (confiança: ALTA)
           Fase: configuracao | Dia: 6 | Gap: 60.0 pp
           Causa: Score 0 está abaixo do limiar 70...
+          [Hipótese: (se presente)]
           Ação: Investigar bloqueios na fase configuracao...
           Fonte: art-u2-board | "Board de Configuração: [✗]..."
 
-    gap_pp ausente (DETERIORACAO, BLOQUEIO): linha "Fase/Dia" sem "| Gap:".
+    gap_pp ausente (DETERIORACAO, BLOQUEIO, SILENCIO): linha "Fase/Dia" sem "| Gap:".
+    hipotese_causal presente: exibida em linha separada "Hipótese: ..." após "Causa:".
     Retorna string multiline sem trailing newline.
     """
     categoria_label = alerta.categoria.value.upper()
@@ -116,6 +120,10 @@ def _formatar_alerta(alerta: Alerta) -> str:
         linhas.append(f"  Fase: {alerta.fase.value} | Dia: {alerta.dia_projeto}")
 
     linhas.append(f"  Causa: {alerta.causa_provavel}")
+
+    if alerta.hipotese_causal is not None:
+        linhas.append(f"  Hipótese: {alerta.hipotese_causal}")
+
     linhas.append(f"  Ação: {alerta.acao_sugerida}")
 
     trecho_formatado = _formatar_trecho(alerta.trecho_fonte)

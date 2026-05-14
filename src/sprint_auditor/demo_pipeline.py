@@ -43,9 +43,6 @@ def _gerar_contraste(projeto: Projeto) -> str:
         ✓ Alerta disparado: Dia 6 — semana 1, antes do comitê
         ✗ Comitê semanal detectaria: Dia 12 — semana 2, tarde demais
           Antecipação: 6 dias
-
-        "isso é exatamente o que a gente precisa olhar
-          na sexta da semana 1"
         ════════════════════════════════════════════
 
     Retorna string sem trailing newline. Nunca levanta exceção.
@@ -72,9 +69,6 @@ def _gerar_contraste(projeto: Projeto) -> str:
         msg2 = f"✗ Comitê semanal detectaria: Dia {_DIA_COMITE_SEMANA_2}"
         linhas.append(msg2 + " — semana 2, tarde demais")
         linhas.append(f"  Antecipação: {antecipacao} dias")
-        linhas.append("")
-        linhas.append('"isso é exatamente o que a gente precisa olhar')
-        linhas.append('  na sexta da semana 1"')
 
     linhas.append("═" * _LARGURA_LINHA)
 

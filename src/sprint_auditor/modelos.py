@@ -26,6 +26,7 @@ class CategoriaAlerta(str, Enum):
     DESVIO_LIMIAR = "desvio_limiar"
     DETERIORACAO_CONSISTENTE = "deterioracao_consistente"
     BLOQUEIO_LINGUISTICO = "bloqueio_linguistico"
+    SILENCIO = "silencio"
 
 
 class Artefato(BaseModel):
@@ -41,6 +42,8 @@ class DeliveryScore(BaseModel):
     dados_suficientes: bool
     valor: Optional[int] = Field(None, ge=0, le=100)
     scores_por_fase: dict[Fase, Optional[int]] = Field(default_factory=dict)
+    progresso_real: Optional[int] = Field(None, ge=0, le=100)
+    progresso_esperado: Optional[int] = Field(None, ge=0, le=100)
 
     @model_validator(mode='after')
     def validar_consistencia_dados(self) -> 'DeliveryScore':
@@ -57,6 +60,7 @@ class Alerta(BaseModel):
     dia_projeto: int = Field(ge=1, le=15)
     gap_pp: Optional[float] = None
     causa_provavel: str
+    hipotese_causal: Optional[str] = None
     nivel_confianca: NivelConfianca
     acao_sugerida: str
     artefato_fonte_id: str
