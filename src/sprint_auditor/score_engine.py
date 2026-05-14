@@ -99,7 +99,7 @@ def calcular_delivery_score(
         DeliveryScore preenchido ou com dados_suficientes=False
     """
     if not resultado_ingestao.tem_artefatos:
-        return DeliveryScore(dados_suficientes=False)
+        return DeliveryScore(dados_suficientes=False, valor=None)
 
     fase = fase_do_dia(dia)
     progresso_real = _extrair_progresso_board(resultado_ingestao.artefatos_validos)
