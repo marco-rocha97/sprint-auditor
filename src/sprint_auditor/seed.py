@@ -9,7 +9,7 @@ from sprint_auditor.modelos import (
 
 
 def carregar_projeto_seed() -> Projeto:
-    """Retorna o projeto sintético 'Alpha Corp' com 3 updates de desvio progressivo."""
+    """Retorna o projeto sintético 'Alpha Corp' com 4 updates: desvio, bloqueio e recovery parcial."""
 
     artefato_u1_board = Artefato(
         id="art-u1-board",
@@ -95,11 +95,39 @@ def carregar_projeto_seed() -> Projeto:
         artefatos=[artefato_u3_board, artefato_u3_transcricao],
     )
 
+    artefato_u4_board = Artefato(
+        id="art-u4-board",
+        tipo=TipoArtefato.BOARD,
+        conteudo=(
+            "Desenvolvimento: [✓] Acesso ao ambiente SAP liberado, "
+            "[~] Setup do agente IA em progresso, [✗] Integração com CRM bloqueada"
+        ),
+        dia_projeto=12,
+    )
+
+    artefato_u4_transcricao = Artefato(
+        id="art-u4-transcricao",
+        tipo=TipoArtefato.TRANSCRICAO,
+        conteudo=(
+            "O acesso SAP foi liberado na quarta-feira. O agente IA está sendo "
+            "configurado mas com atraso em relação ao cronograma original. "
+            "A integração com CRM ainda está pendente — estamos correndo contra o prazo."
+        ),
+        dia_projeto=12,
+    )
+
+    update_4 = Update(
+        id="upd-4",
+        numero=4,
+        dia_projeto=12,
+        artefatos=[artefato_u4_board, artefato_u4_transcricao],
+    )
+
     projeto = Projeto(
         id="proj-alpha-001",
         nome="Onboarding Alpha Corp",
         data_kickoff=datetime(2026, 4, 28, 9, 0, 0, tzinfo=timezone.utc),
-        updates=[update_1, update_2, update_3],
+        updates=[update_1, update_2, update_3, update_4],
     )
 
     return projeto

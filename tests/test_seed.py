@@ -44,3 +44,22 @@ class TestCarregarProjetoSeed:
         projeto = carregar_projeto_seed()
         assert projeto.data_kickoff.tzinfo is not None
         assert projeto.data_kickoff.utcoffset() == timedelta(0)
+
+    def test_seed_tem_quatro_updates(self):
+        """Seed deve ter 4 updates (T07)"""
+        projeto = carregar_projeto_seed()
+        assert len(projeto.updates) == 4
+
+    def test_update_4_dia_doze(self):
+        """Update 4 deve estar no dia 12"""
+        projeto = carregar_projeto_seed()
+        assert projeto.updates[-1].dia_projeto == 12
+
+    def test_update_4_tem_board_e_transcricao(self):
+        """Update 4 deve ter 1 artefato BOARD + 1 TRANSCRICAO"""
+        projeto = carregar_projeto_seed()
+        update_4 = projeto.updates[-1]
+        boards = [a for a in update_4.artefatos if a.tipo == TipoArtefato.BOARD]
+        transcricoes = [a for a in update_4.artefatos if a.tipo == TipoArtefato.TRANSCRICAO]
+        assert len(boards) == 1
+        assert len(transcricoes) == 1
