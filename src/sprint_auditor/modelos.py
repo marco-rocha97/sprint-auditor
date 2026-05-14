@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Optional
 
-from pydantic import AwareDatetime, BaseModel, Field, model_validator
+from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, model_validator
 
 
 class Fase(str, Enum):
@@ -70,6 +70,17 @@ class Update(BaseModel):
     artefatos: list[Artefato] = Field(default_factory=list)
     score: Optional[DeliveryScore] = None
     alertas: list[Alerta] = Field(default_factory=list)
+
+
+class ResultadoIngestao(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True, from_attributes=True)
+
+    artefatos_validos: list[Artefato] = Field(default_factory=list)
+    artefatos_invalidos: list[Artefato] = Field(default_factory=list)
+
+    @property
+    def tem_artefatos(self) -> bool:
+        return len(self.artefatos_validos) > 0
 
 
 class Projeto(BaseModel):
