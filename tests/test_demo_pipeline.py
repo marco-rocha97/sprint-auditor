@@ -36,7 +36,12 @@ class TestExecutarDemo:
         """Alertas presentes no Update #3 (dia 9)"""
         resultado = executar_demo()
 
-        assert "Update #3" in resultado and ("DESVIO" in resultado or "BLOQUEIO" in resultado or "DETERIORACAO" in resultado)
+        tem_alerta = (
+            "DESVIO" in resultado
+            or "BLOQUEIO" in resultado
+            or "DETERIORACAO" in resultado
+        )
+        assert "Update #3" in resultado and tem_alerta
 
     def test_rastreabilidade_id_artefato_fonte_no_output(self):
         """Rastreabilidade: ID do artefato-fonte no output — procura por 'art-u2-board'"""

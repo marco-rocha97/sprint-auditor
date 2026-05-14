@@ -29,11 +29,12 @@ def _processar_update(update: Update, anteriores: list[Update]) -> Update:
 
 
 def _gerar_contraste(projeto: Projeto) -> str:
-    """Gera a seção de contraste da demo: quando o alerta foi disparado vs. quando o comitê detectaria.
+    """Gera a seção de contraste: alerta vs. comitê semanal.
 
-    Varre os updates do projeto em ordem crescente de numero para encontrar o primeiro com alertas.
-    Calcula antecipação = _DIA_COMITE_SEMANA_2 - dia_primeiro_alerta.
-    Se nenhum update tiver alertas, retorna seção indicando ausência de desvio detectado.
+    Varre os updates do projeto em ordem crescente de numero para encontrar
+    o primeiro com alertas. Calcula antecipação = _DIA_COMITE_SEMANA_2 -
+    dia_primeiro_alerta. Se nenhum update tiver alertas, retorna seção
+    indicando ausência de desvio detectado.
 
     Formato (caso com alerta):
         ════════════════════════════════════════════
@@ -66,8 +67,10 @@ def _gerar_contraste(projeto: Projeto) -> str:
         linhas.append("Sem desvio detectado em nenhum update.")
     else:
         antecipacao = _DIA_COMITE_SEMANA_2 - primeiro_alerta_dia
-        linhas.append(f"✓ Alerta disparado: Dia {primeiro_alerta_dia} — semana 1, antes do comitê")
-        linhas.append(f"✗ Comitê semanal detectaria: Dia {_DIA_COMITE_SEMANA_2} — semana 2, tarde demais")
+        msg1 = f"✓ Alerta disparado: Dia {primeiro_alerta_dia} — semana 1"
+        linhas.append(msg1 + ", antes do comitê")
+        msg2 = f"✗ Comitê semanal detectaria: Dia {_DIA_COMITE_SEMANA_2}"
+        linhas.append(msg2 + " — semana 2, tarde demais")
         linhas.append(f"  Antecipação: {antecipacao} dias")
         linhas.append("")
         linhas.append('"isso é exatamente o que a gente precisa olhar')
@@ -107,8 +110,8 @@ def executar_demo() -> str:
 
     projeto_processado = projeto_original.model_copy(update={"updates": atualizados_anteriores})
 
-    relatorio = gerar_relatorio(projeto_processado)
-    contraste = _gerar_contraste(projeto_processado)
+    relatorio: str = gerar_relatorio(projeto_processado)
+    contraste: str = _gerar_contraste(projeto_processado)
 
     return relatorio + "\n\n" + contraste
 
