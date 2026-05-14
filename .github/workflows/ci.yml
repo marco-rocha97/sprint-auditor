@@ -24,7 +24,7 @@ jobs:
           enable-cache: true
 
       - name: Sync dependencies
-        run: uv sync --extras dev
+        run: uv sync --extra dev
 
       - name: Lint with ruff
         run: uv run ruff check src/ tests/
@@ -39,7 +39,7 @@ jobs:
           enable-cache: true
 
       - name: Sync dependencies
-        run: uv sync --extras dev
+        run: uv sync --extra dev
 
       - name: Type-check with mypy
         run: uv run mypy src/
@@ -54,7 +54,7 @@ jobs:
           enable-cache: true
 
       - name: Sync dependencies
-        run: uv sync --extras dev
+        run: uv sync --extra dev
 
       - name: Run tests with pytest
         run: uv run pytest tests/ -v --tb=short
