@@ -62,6 +62,18 @@ class TestExecutarDemo:
 
         assert "6 dias" in resultado
 
+    def test_sem_frase_hardcoded(self):
+        """Frase hardcoded foi removida — output não contém 'isso é exatamente' (T07)"""
+        resultado = executar_demo()
+
+        assert "isso é exatamente" not in resultado
+
+    def test_quatro_updates_processados(self):
+        """Seed agora tem 4 updates — output contém "Update #4" (T07)"""
+        resultado = executar_demo()
+
+        assert "Update #4" in resultado
+
 
 class TestMain:
     """Testes do ponto de entrada main"""
