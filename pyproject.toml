@@ -9,6 +9,7 @@ dependencies = [
 
 [project.scripts]
 sprint-auditor-demo = "sprint_auditor.demo_pipeline:main"
+sprint-auditor-explain = "sprint_auditor.explain:main_explain"
 
 [project.optional-dependencies]
 dev = [
