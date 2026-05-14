@@ -67,9 +67,9 @@ class TestCalcularScore:
     def test_criterio_spec_dia6_configuracao(self):
         score = calcular_score(38, Fase.CONFIGURACAO, 6)
 
-        assert score.valor == 63
+        assert score.valor == 78
         assert score.dados_suficientes is True
-        assert score.scores_por_fase == {Fase.CONFIGURACAO: 63}
+        assert score.scores_por_fase == {Fase.CONFIGURACAO: 78}
 
     def test_progresso_real_igual_esperado(self):
         score = calcular_score(60, Fase.CONFIGURACAO, 6)
@@ -80,7 +80,7 @@ class TestCalcularScore:
     def test_progresso_real_zero(self):
         score = calcular_score(0, Fase.CONFIGURACAO, 6)
 
-        assert score.valor == 0
+        assert score.valor == 40
         assert score.dados_suficientes is True
 
     def test_progresso_real_acima_esperado_capped(self):
@@ -97,6 +97,35 @@ class TestCalcularScore:
         assert Fase.DISCOVERY not in score.scores_por_fase
         assert Fase.DESENVOLVIMENTO not in score.scores_por_fase
         assert Fase.REVIEW not in score.scores_por_fase
+
+    def test_gradiente_real_zero_esperado_vinte_cinco(self):
+        score = calcular_score(0, Fase.DESENVOLVIMENTO, 9)
+
+        assert score.valor == 75
+        assert score.dados_suficientes is True
+
+    def test_gradiente_real_cinquenta_esperado_cem(self):
+        score = calcular_score(50, Fase.DESENVOLVIMENTO, 12)
+
+        assert score.valor == 50
+        assert score.dados_suficientes is True
+
+    def test_progresso_real_armazenado(self):
+        score = calcular_score(38, Fase.CONFIGURACAO, 6)
+
+        assert score.progresso_real == 38
+
+    def test_progresso_esperado_armazenado(self):
+        score = calcular_score(38, Fase.CONFIGURACAO, 6)
+
+        assert score.progresso_esperado == 60
+
+    def test_gap_negativo_capped_em_zero(self):
+        score = calcular_score(80, Fase.CONFIGURACAO, 6)
+
+        assert score.valor == 100
+        assert score.progresso_real == 80
+        assert score.progresso_esperado == 60
 
 
 class TestExtrairProgressoBoard:
