@@ -31,7 +31,7 @@ def ingerir_artefatos(artefatos: list[Artefato]) -> ResultadoIngestao:
                 )
             )
 
-    return ResultadoIngestao(
+    return ResultadoIngestao.model_construct(
         artefatos_validos=artefatos_validos,
         artefatos_invalidos=artefatos_invalidos,
     )
