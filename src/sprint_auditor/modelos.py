@@ -72,6 +72,15 @@ class Update(BaseModel):
     alertas: list[Alerta] = Field(default_factory=list)
 
 
+class ResultadoIngestao(BaseModel):
+    artefatos_validos: list[Artefato] = Field(default_factory=list)
+    artefatos_invalidos: list[Artefato] = Field(default_factory=list)
+
+    @property
+    def tem_artefatos(self) -> bool:
+        return len(self.artefatos_validos) > 0
+
+
 class Projeto(BaseModel):
     id: str
     nome: str
