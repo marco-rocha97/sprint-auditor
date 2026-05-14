@@ -7,6 +7,9 @@ dependencies = [
     "pydantic>=2.0",
 ]
 
+[project.scripts]
+sprint-auditor-demo = "sprint_auditor.demo_pipeline:main"
+
 [project.optional-dependencies]
 dev = [
     "pytest>=7.0",

@@ -1,15 +1,15 @@
-from src.sprint_auditor.modelos import (
+from sprint_auditor.modelos import (
     Artefato,
     Fase,
     ResultadoIngestao,
     TipoArtefato,
 )
-from src.sprint_auditor.score_engine import (
+from sprint_auditor.score_engine import (
     _extrair_progresso_board,
     calcular_delivery_score,
     calcular_score,
 )
-from src.sprint_auditor.seed import carregar_projeto_seed
+from sprint_auditor.seed import carregar_projeto_seed
 
 
 class TestCalcularDeliveryScore:

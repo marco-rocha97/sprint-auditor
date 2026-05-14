@@ -1,7 +1,7 @@
 from datetime import timedelta
 
-from src.sprint_auditor.modelos import TipoArtefato
-from src.sprint_auditor.seed import carregar_projeto_seed
+from sprint_auditor.modelos import TipoArtefato
+from sprint_auditor.seed import carregar_projeto_seed
 
 
 class TestCarregarProjetoSeed:

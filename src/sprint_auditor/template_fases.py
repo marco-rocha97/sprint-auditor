@@ -1,4 +1,4 @@
-from src.sprint_auditor.modelos import Fase
+from sprint_auditor.modelos import Fase
 
 TEMPLATE_PROGRESSO = {
     (Fase.DISCOVERY, 1): 30,

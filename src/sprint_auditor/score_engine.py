@@ -1,13 +1,13 @@
 import re
 
-from src.sprint_auditor.modelos import (
+from sprint_auditor.modelos import (
     Artefato,
     DeliveryScore,
     Fase,
     ResultadoIngestao,
     TipoArtefato,
 )
-from src.sprint_auditor.template_fases import fase_do_dia, progresso_esperado
+from sprint_auditor.template_fases import fase_do_dia, progresso_esperado
 
 
 def _extrair_progresso_board(artefatos: list[Artefato]) -> int:
