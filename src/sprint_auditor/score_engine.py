@@ -54,7 +54,9 @@ def _extrair_progresso_board(artefatos: list[Artefato]) -> int:
 def calcular_score(progresso_real: int, fase: Fase, dia: int) -> DeliveryScore:
     """Calcula DeliveryScore a partir do progresso real e do esperado pelo template.
 
-    Fórmula: max(0, min(100, int(progresso_real * 100 / progresso_esperado)))
+    Nova fórmula gap-based (T07):
+    gap_pp = max(0, progresso_esperado(fase, dia) - progresso_real)
+    valor = max(0, 100 - gap_pp)
 
     Args:
         progresso_real: percentual real extraído dos artefatos (0–100)
@@ -63,22 +65,21 @@ def calcular_score(progresso_real: int, fase: Fase, dia: int) -> DeliveryScore:
 
     Returns:
         DeliveryScore com dados_suficientes=True, valor calculado,
-        scores_por_fase={fase: valor}
+        scores_por_fase={fase: valor}, progresso_real e progresso_esperado preenchidos.
 
     Raises:
         KeyError: se (fase, dia) não é uma combinação válida do template
     """
     esperado = progresso_esperado(fase, dia)
-
-    if esperado == 0:
-        valor = 0
-    else:
-        valor = max(0, min(100, int(progresso_real * 100 / esperado)))
+    gap_pp = max(0, esperado - progresso_real)
+    valor = max(0, 100 - gap_pp)
 
     return DeliveryScore(
         dados_suficientes=True,
         valor=valor,
         scores_por_fase={fase: valor},
+        progresso_real=progresso_real,
+        progresso_esperado=esperado,
     )
 
 
