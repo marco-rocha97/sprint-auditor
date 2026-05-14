@@ -1,4 +1,4 @@
-from src.sprint_auditor.demo_pipeline import executar_demo, main
+from sprint_auditor.demo_pipeline import executar_demo, main
 
 
 class TestExecutarDemo:

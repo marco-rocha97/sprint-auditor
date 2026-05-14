@@ -1,5 +1,5 @@
-from src.sprint_auditor.ingestao import ingerir_artefatos
-from src.sprint_auditor.modelos import Artefato, TipoArtefato
+from sprint_auditor.ingestao import ingerir_artefatos
+from sprint_auditor.modelos import Artefato, TipoArtefato
 
 
 class TestIngestaoHappyPath:

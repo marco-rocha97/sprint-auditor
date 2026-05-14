@@ -1,7 +1,7 @@
 import pytest
 
-from src.sprint_auditor.modelos import Fase
-from src.sprint_auditor.template_fases import fase_do_dia, progresso_esperado
+from sprint_auditor.modelos import Fase
+from sprint_auditor.template_fases import fase_do_dia, progresso_esperado
 
 
 class TestProgressoEsperado:

@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 import pytest
 from pydantic import ValidationError
 
-from src.sprint_auditor.modelos import (
+from sprint_auditor.modelos import (
     Artefato,
     DeliveryScore,
     Projeto,
