@@ -12,6 +12,14 @@ from sprint_auditor.modelos import (
 from sprint_auditor.template_fases import fase_do_dia, progresso_esperado
 
 LIMIAR_DESVIO: int = 70
+LIMIAR_SILENCIO: int = 2
+
+TEMPLATE_HIPOTESE: str = (
+    "Fase {fase} travada em {progresso_real}% no dia {dia}. "
+    "Hipótese: dependência externa — sinalizado na transcrição "
+    "('{trecho_bloqueio}'). "
+    "Escalar para o FDE Lead pedir intervenção do sponsor do cliente."
+)
 
 PADROES_BLOQUEIO: list[str] = [
     r"aguardando\s+\w+",
@@ -67,15 +75,12 @@ def _detectar_desvio_limiar(update: Update) -> Optional[Alerta]:
         return None
 
     fase = fase_do_dia(update.dia_projeto)
-    progresso_esp = progresso_esperado(fase, update.dia_projeto)
 
-    gap_pp = float(progresso_esp * (1 - update.score.valor / 100))
-
-    real_percentual = int(update.score.valor * progresso_esp / 100)
+    gap_pp = float(max(0, update.score.progresso_esperado - update.score.progresso_real)) if update.score.progresso_esperado is not None and update.score.progresso_real is not None else 0.0
 
     causa_provavel = (
         f"Score {update.score.valor} está abaixo do limiar {LIMIAR_DESVIO} — "
-        f"progresso real estimado em {real_percentual}% contra {progresso_esp}% esperado "
+        f"progresso real {update.score.progresso_real}% contra {update.score.progresso_esperado}% esperado "
         f"para a fase {fase.value} no dia {update.dia_projeto}"
     )
 
@@ -208,41 +213,122 @@ def _detectar_bloqueio_linguistico(update: Update) -> Optional[Alerta]:
     return None
 
 
+def _detectar_silencio(
+    update_atual: Update,
+    updates_anteriores: list[Update],
+) -> Optional[Alerta]:
+    """Retorna Alerta SILENCIO se gap de dias entre o último update anterior
+    e update_atual for > LIMIAR_SILENCIO.
+
+    Requer pelo menos 1 update anterior. Retorna None se lista vazia.
+    artefato_fonte_id = "sistema"
+    trecho_fonte = f"Sem update há {gap} dias (último: dia {ultimo_dia})"
+    Nunca levanta exceção.
+
+    Args:
+        update_atual: update sendo avaliado
+        updates_anteriores: updates do mesmo projeto em ordem crescente de numero
+
+    Returns:
+        Alerta com categoria SILENCIO, ou None
+    """
+    if not updates_anteriores:
+        return None
+
+    ultimo_update = updates_anteriores[-1]
+    gap = update_atual.dia_projeto - ultimo_update.dia_projeto
+
+    if gap <= LIMIAR_SILENCIO:
+        return None
+
+    fase = fase_do_dia(update_atual.dia_projeto)
+
+    trecho_fonte = f"Sem update há {gap} dias (último: dia {ultimo_update.dia_projeto})"
+
+    causa_provavel = (
+        f"Squad sem sinal há {gap} dias — último update foi no dia {ultimo_update.dia_projeto}"
+    )
+
+    acao_sugerida = (
+        f"Contatar FDE Lead para status — squad sem sinal há {gap} dias"
+    )
+
+    return Alerta(
+        categoria=CategoriaAlerta.SILENCIO,
+        fase=fase,
+        dia_projeto=update_atual.dia_projeto,
+        gap_pp=None,
+        causa_provavel=causa_provavel,
+        hipotese_causal=None,
+        nivel_confianca=NivelConfianca.MEDIO,
+        acao_sugerida=acao_sugerida,
+        artefato_fonte_id="sistema",
+        trecho_fonte=trecho_fonte,
+    )
+
+
 def analisar_alertas(
     update_atual: Update,
     updates_anteriores: list[Update],
 ) -> list[Alerta]:
-    """Ponto de entrada — executa os 3 detectores e retorna todos os alertas gerados.
+    """Ponto de entrada — executa detectores, funde alertas e retorna lista final.
 
-    Lista vazia significa que o projeto está no trilho (silêncio é informação).
+    Regras adicionadas em T07:
+    - _detectar_silencio é chamado sempre (retorna None se não há anteriores)
+    - Fusão: se DESVIO_LIMIAR e BLOQUEIO_LINGUISTICO disparam no mesmo update,
+      produz 1 alerta DESVIO_LIMIAR com hipotese_causal preenchida via TEMPLATE_HIPOTESE;
+      BLOQUEIO_LINGUISTICO NÃO é incluído separadamente na lista retornada.
+    - SILENCIO é sempre listado separadamente (não sofre fusão).
 
-    Regras de execução:
-    - Se update_atual.score é None → executa apenas _detectar_bloqueio_linguistico
-    - Se score.dados_suficientes=False → executa apenas _detectar_bloqueio_linguistico
-    - Caso contrário → executa os 3 detectores independentemente
+    Ordem de saída: [DESVIO_LIMIAR_fusionado_ou_normal, DETERIORACAO, BLOQUEIO_standalone, SILENCIO]
+    Lista vazia = projeto no trilho neste update.
 
     Args:
         update_atual: update com score já preenchido por T03
         updates_anteriores: updates anteriores do mesmo projeto, em ordem crescente de numero
 
     Returns:
-        Lista com 0, 1, 2 ou 3 alertas — todos os detectores que dispararam
+        Lista de alertas com fusão aplicada quando necessário
     """
     alertas = []
 
     pode_usar_score = update_atual.score is not None and update_atual.score.dados_suficientes
 
+    alerta_desvio = None
+    alerta_bloqueio = None
+
     if pode_usar_score:
         alerta_desvio = _detectar_desvio_limiar(update_atual)
-        if alerta_desvio:
-            alertas.append(alerta_desvio)
 
         alerta_deterioracao = _detectar_deterioracao_consistente(update_atual, updates_anteriores)
         if alerta_deterioracao:
             alertas.append(alerta_deterioracao)
 
     alerta_bloqueio = _detectar_bloqueio_linguistico(update_atual)
-    if alerta_bloqueio:
-        alertas.append(alerta_bloqueio)
+
+    if alerta_desvio and alerta_bloqueio:
+        hipotese = TEMPLATE_HIPOTESE.format(
+            fase=alerta_desvio.fase.value,
+            progresso_real=update_atual.score.progresso_real,
+            dia=update_atual.dia_projeto,
+            trecho_bloqueio=alerta_bloqueio.trecho_fonte,
+        )
+        alerta_desvio_fusionado = alerta_desvio.model_copy(
+            update={
+                "hipotese_causal": hipotese,
+                "acao_sugerida": "Bloqueio externo confirmado por sinal linguístico → escalar para o FDE Lead",
+                "nivel_confianca": NivelConfianca.ALTO,
+            }
+        )
+        alertas.insert(0, alerta_desvio_fusionado)
+    else:
+        if alerta_desvio:
+            alertas.insert(0, alerta_desvio)
+        if alerta_bloqueio:
+            alertas.append(alerta_bloqueio)
+
+    alerta_silencio = _detectar_silencio(update_atual, updates_anteriores)
+    if alerta_silencio:
+        alertas.append(alerta_silencio)
 
     return alertas
