@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from src.sprint_auditor.modelos import (
+from sprint_auditor.modelos import (
     Artefato,
     Projeto,
     TipoArtefato,
