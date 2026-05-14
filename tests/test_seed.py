@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import timedelta
 
 from src.sprint_auditor.modelos import TipoArtefato
 from src.sprint_auditor.seed import carregar_projeto_seed
@@ -43,5 +43,4 @@ class TestCarregarProjetoSeed:
     def test_timezone_utc(self):
         projeto = carregar_projeto_seed()
         assert projeto.data_kickoff.tzinfo is not None
-        from datetime import timedelta
         assert projeto.data_kickoff.utcoffset() == timedelta(0)

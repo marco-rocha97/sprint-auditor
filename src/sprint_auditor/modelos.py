@@ -1,8 +1,7 @@
 from enum import Enum
 from typing import Optional
-from datetime import datetime, timezone
 
-from pydantic import BaseModel, Field, model_validator, AwareDatetime
+from pydantic import AwareDatetime, BaseModel, Field, model_validator
 
 
 class Fase(str, Enum):

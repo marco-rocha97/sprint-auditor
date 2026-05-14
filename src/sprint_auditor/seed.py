@@ -1,10 +1,10 @@
 from datetime import datetime, timezone
 
 from src.sprint_auditor.modelos import (
-    Projeto,
-    Update,
     Artefato,
+    Projeto,
     TipoArtefato,
+    Update,
 )
 
 
@@ -14,14 +14,21 @@ def carregar_projeto_seed() -> Projeto:
     artefato_u1_board = Artefato(
         id="art-u1-board",
         tipo=TipoArtefato.BOARD,
-        conteudo="Discovery: [✓] Kickoff realizado, [✓] Escopo definido, [~] Validação SAP em progresso",
+        conteudo=(
+            "Discovery: [✓] Kickoff realizado, [✓] Escopo definido, "
+            "[~] Validação SAP em progresso"
+        ),
         dia_projeto=3,
     )
 
     artefato_u1_transcricao = Artefato(
         id="art-u1-transcricao",
         tipo=TipoArtefato.TRANSCRICAO,
-        conteudo="Equipe concluiu o kickoff com sucesso. Escopo está alinhado. Temos um pequeno atraso na validação SAP mas está dentro da tolerância para o cronograma.",
+        conteudo=(
+            "Equipe concluiu o kickoff com sucesso. Escopo está alinhado. "
+            "Temos um pequeno atraso na validação SAP mas está dentro da "
+            "tolerância para o cronograma."
+        ),
         dia_projeto=3,
     )
 
@@ -35,14 +42,21 @@ def carregar_projeto_seed() -> Projeto:
     artefato_u2_board = Artefato(
         id="art-u2-board",
         tipo=TipoArtefato.BOARD,
-        conteudo="Configuração: [✗] Acesso ao ambiente SAP, [✗] Setup do agente IA, [✗] Integração com CRM",
+        conteudo=(
+            "Configuração: [✗] Acesso ao ambiente SAP, [✗] Setup do agente "
+            "IA, [✗] Integração com CRM"
+        ),
         dia_projeto=6,
     )
 
     artefato_u2_transcricao = Artefato(
         id="art-u2-transcricao",
         tipo=TipoArtefato.TRANSCRICAO,
-        conteudo="Ainda não temos acesso ao SAP, aguardando aprovação do departamento de TI da Alpha Corp. Isso está segurando tudo. O setup do agente não pode avançar sem o ambiente configurado.",
+        conteudo=(
+            "Ainda não temos acesso ao SAP, aguardando aprovação do "
+            "departamento de TI da Alpha Corp. Isso está segurando tudo. "
+            "O setup do agente não pode avançar sem o ambiente configurado."
+        ),
         dia_projeto=6,
     )
 
@@ -56,14 +70,21 @@ def carregar_projeto_seed() -> Projeto:
     artefato_u3_board = Artefato(
         id="art-u3-board",
         tipo=TipoArtefato.BOARD,
-        conteudo="Desenvolvimento: [✗] Agente IA bloqueado, [✗] Testes SAP falhos, [✗] Deploy pausado",
+        conteudo=(
+            "Desenvolvimento: [✗] Agente IA bloqueado, [✗] Testes SAP "
+            "falhos, [✗] Deploy pausado"
+        ),
         dia_projeto=9,
     )
 
     artefato_u3_transcricao = Artefato(
         id="art-u3-transcricao",
         tipo=TipoArtefato.TRANSCRICAO,
-        conteudo="Desenvolvimento está completamente bloqueado. O ambiente SAP tem falhas de conectividade. Sem acesso, não conseguimos testar a integração.",
+        conteudo=(
+            "Desenvolvimento está completamente bloqueado. O ambiente SAP "
+            "tem falhas de conectividade. Sem acesso, não conseguimos testar "
+            "a integração."
+        ),
         dia_projeto=9,
     )
 

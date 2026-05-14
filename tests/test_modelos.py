@@ -1,18 +1,14 @@
-import pytest
 from datetime import datetime, timezone
 
+import pytest
 from pydantic import ValidationError
 
 from src.sprint_auditor.modelos import (
-    Fase,
-    TipoArtefato,
-    NivelConfianca,
-    CategoriaAlerta,
     Artefato,
     DeliveryScore,
-    Alerta,
-    Update,
     Projeto,
+    TipoArtefato,
+    Update,
 )
 
 
