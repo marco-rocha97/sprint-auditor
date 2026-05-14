@@ -1,5 +1,4 @@
 import sys
-from io import StringIO
 
 from sprint_auditor.explain import decompor_score, main_explain
 from sprint_auditor.ingestao import ingerir_artefatos
@@ -12,7 +11,7 @@ class TestDecomporScore:
     """Testes da função decompor_score"""
 
     def test_happy_path_update_2(self):
-        """Update com score(valor=40, progresso_real=0, progresso_esperado=60) → output com 40/100 e 60 pp"""
+        """Update com score(40, 0, 60) → output com 40/100 e 60 pp."""
         projeto = carregar_projeto_seed()
         update_2 = projeto.updates[1]
 

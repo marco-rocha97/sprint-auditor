@@ -11,14 +11,16 @@ def decompor_score(update: Update) -> str:
     """Formata a decomposição do score de um update como texto puro.
 
     Requer update.score not None.
-    Exibe: número, dia, fase, progresso_esperado, progresso_real, gap, score, limiar, status, alertas.
+    Exibe: número, dia, fase, progresso_esperado, progresso_real, gap, score,
+    limiar, status, alertas.
 
     Args:
         update: update com score preenchido (T03 executou)
 
     Returns:
         String multiline sem trailing newline.
-        Retorna mensagem de erro se update.score is None ou dados_suficientes=False.
+        Retorna mensagem de erro se update.score is None ou
+        dados_suficientes=False.
     """
     if update.score is None or not update.score.dados_suficientes:
         return (
@@ -56,7 +58,7 @@ def decompor_score(update: Update) -> str:
 def main_explain() -> None:
     """CLI entry point — registrado em pyproject.toml como sprint-auditor-explain.
 
-    Uso: sprint-auditor-explain --update N
+    Uso: sprint-auditor-explain --update N.
     Carrega seed, executa pipeline completo, exibe decomposição do update N.
     Imprime erro e sai se N não existe.
     """
@@ -72,7 +74,7 @@ def main_explain() -> None:
 
     projeto = carregar_projeto_seed()
     updates_ordenados = sorted(projeto.updates, key=lambda u: u.numero)
-    atualizados_anteriores = []
+    atualizados_anteriores: list[Update] = []
 
     for update in updates_ordenados:
         atualizado = _processar_update(update, atualizados_anteriores)

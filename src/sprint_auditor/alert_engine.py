@@ -9,7 +9,7 @@ from sprint_auditor.modelos import (
     TipoArtefato,
     Update,
 )
-from sprint_auditor.template_fases import fase_do_dia, progresso_esperado
+from sprint_auditor.template_fases import fase_do_dia
 
 LIMIAR_DESVIO: int = 70
 LIMIAR_SILENCIO: int = 2
@@ -76,12 +76,16 @@ def _detectar_desvio_limiar(update: Update) -> Optional[Alerta]:
 
     fase = fase_do_dia(update.dia_projeto)
 
-    gap_pp = float(max(0, update.score.progresso_esperado - update.score.progresso_real)) if update.score.progresso_esperado is not None and update.score.progresso_real is not None else 0.0
+    if update.score.progresso_esperado is not None and update.score.progresso_real is not None:
+        gap_pp = float(max(0, update.score.progresso_esperado - update.score.progresso_real))
+    else:
+        gap_pp = 0.0
 
     causa_provavel = (
         f"Score {update.score.valor} está abaixo do limiar {LIMIAR_DESVIO} — "
-        f"progresso real {update.score.progresso_real}% contra {update.score.progresso_esperado}% esperado "
-        f"para a fase {fase.value} no dia {update.dia_projeto}"
+        f"progresso real {update.score.progresso_real}% contra "
+        f"{update.score.progresso_esperado}% esperado para a fase {fase.value} no dia "
+        f"{update.dia_projeto}"
     )
 
     acao_sugerida = (
@@ -313,10 +317,14 @@ def analisar_alertas(
             dia=update_atual.dia_projeto,
             trecho_bloqueio=alerta_bloqueio.trecho_fonte,
         )
+        acao_sugerida_fusao = (
+            "Bloqueio externo confirmado por sinal linguístico → escalar para "
+            "o FDE Lead"
+        )
         alerta_desvio_fusionado = alerta_desvio.model_copy(
             update={
                 "hipotese_causal": hipotese,
-                "acao_sugerida": "Bloqueio externo confirmado por sinal linguístico → escalar para o FDE Lead",
+                "acao_sugerida": acao_sugerida_fusao,
                 "nivel_confianca": NivelConfianca.ALTO,
             }
         )

@@ -87,7 +87,7 @@ class TestAnalisarAlertas:
         assert alertas[0].categoria == CategoriaAlerta.BLOQUEIO_LINGUISTICO
 
     def test_multi_alerta_desvio_e_bloqueio(self):
-        """Update com score baixo E bloqueio deve retornar 1 alerta DESVIO fusionado com hipotese_causal"""
+        """Update com score baixo E bloqueio → 1 alerta DESVIO com hipotese."""
         update = Update(
             id="upd-test",
             numero=1,
@@ -106,7 +106,12 @@ class TestAnalisarAlertas:
                     dia_projeto=3,
                 ),
             ],
-            score=DeliveryScore(dados_suficientes=True, valor=0, progresso_real=0, progresso_esperado=100),
+            score=DeliveryScore(
+                dados_suficientes=True,
+                valor=0,
+                progresso_real=0,
+                progresso_esperado=100,
+            ),
         )
 
         alertas = analisar_alertas(update, [])
@@ -231,7 +236,7 @@ class TestDetectarDesvioLimiar:
         assert alerta is None
 
     def test_gap_pp_criterio_spec(self):
-        """gap_pp para progresso_real=0, progresso_esperado=60 deve ser 60 (criterio SPEC T07)"""
+        """gap_pp para real=0, esperado=60 → 60 (criterio SPEC T07)."""
         update = Update(
             id="upd-test",
             numero=1,
@@ -244,7 +249,12 @@ class TestDetectarDesvioLimiar:
                     dia_projeto=6,
                 )
             ],
-            score=DeliveryScore(dados_suficientes=True, valor=40, progresso_real=0, progresso_esperado=60),
+            score=DeliveryScore(
+                dados_suficientes=True,
+                valor=40,
+                progresso_real=0,
+                progresso_esperado=60,
+            ),
         )
 
         alerta = _detectar_desvio_limiar(update)
@@ -582,7 +592,7 @@ class TestSeedRastreabilidade:
         assert alerta_desvio_esperado.artefato_fonte_id == "art-u2-board"
 
     def test_seed_u2_bloqueio_rastreavel(self):
-        """Seed U2 tem DESVIO+BLOQUEIO fusionados; BLOQUEIO não é standalone; hipotese contém 'aguardando'"""
+        """Seed U2: DESVIO+BLOQUEIO fusionados; hipotese contém 'aguardando'."""
         projeto = carregar_projeto_seed()
         update_1 = projeto.updates[0]
         update_2 = projeto.updates[1]
@@ -598,7 +608,8 @@ class TestSeedRastreabilidade:
         alerta_desvio_fusionado = None
         alertas = analisar_alertas(update_2, [update_1])
         for alerta in alertas:
-            if alerta.categoria == CategoriaAlerta.DESVIO_LIMIAR and alerta.hipotese_causal is not None:
+            if (alerta.categoria == CategoriaAlerta.DESVIO_LIMIAR
+                    and alerta.hipotese_causal is not None):
                 alerta_desvio_fusionado = alerta
                 break
 
@@ -696,7 +707,7 @@ class TestFusaoAlertas:
     """Testes da lógica de fusão DESVIO + BLOQUEIO (T07)"""
 
     def test_fusao_desvio_bloqueio_retorna_um_alerta(self):
-        """DESVIO + BLOQUEIO co-ocorrentes → 1 alerta DESVIO com hipotese_causal"""
+        """DESVIO + BLOQUEIO co-ocorrentes → 1 alerta DESVIO com hipotese."""
         update = Update(
             id="upd-test",
             numero=1,
@@ -715,7 +726,12 @@ class TestFusaoAlertas:
                     dia_projeto=6,
                 ),
             ],
-            score=DeliveryScore(dados_suficientes=True, valor=40, progresso_real=0, progresso_esperado=60),
+            score=DeliveryScore(
+                dados_suficientes=True,
+                valor=40,
+                progresso_real=0,
+                progresso_esperado=60,
+            ),
         )
 
         alertas = analisar_alertas(update, [])
@@ -726,7 +742,7 @@ class TestFusaoAlertas:
         assert alertas[0].nivel_confianca == NivelConfianca.ALTO
 
     def test_hipotese_contem_trecho_bloqueio(self):
-        """hipotese_causal deve conter o trecho da transcrição casado"""
+        """hipotese_causal deve conter o trecho casado."""
         update = Update(
             id="upd-test",
             numero=1,
@@ -745,7 +761,12 @@ class TestFusaoAlertas:
                     dia_projeto=6,
                 ),
             ],
-            score=DeliveryScore(dados_suficientes=True, valor=40, progresso_real=0, progresso_esperado=60),
+            score=DeliveryScore(
+                dados_suficientes=True,
+                valor=40,
+                progresso_real=0,
+                progresso_esperado=60,
+            ),
         )
 
         alertas = analisar_alertas(update, [])
@@ -754,7 +775,7 @@ class TestFusaoAlertas:
         assert "bloqueado" in alertas[0].hipotese_causal.lower()
 
     def test_sem_fusao_quando_desvio_sem_bloqueio(self):
-        """Score baixo sem bloqueio → DESVIO com hipotese_causal=None"""
+        """Score baixo sem bloqueio → DESVIO com hipotese_causal=None."""
         update = Update(
             id="upd-test",
             numero=1,
@@ -767,7 +788,12 @@ class TestFusaoAlertas:
                     dia_projeto=6,
                 ),
             ],
-            score=DeliveryScore(dados_suficientes=True, valor=40, progresso_real=0, progresso_esperado=60),
+            score=DeliveryScore(
+                dados_suficientes=True,
+                valor=40,
+                progresso_real=0,
+                progresso_esperado=60,
+            ),
         )
 
         alertas = analisar_alertas(update, [])
@@ -777,7 +803,7 @@ class TestFusaoAlertas:
         assert alertas[0].hipotese_causal is None
 
     def test_sem_fusao_quando_bloqueio_sem_desvio(self):
-        """Score acima do limiar com bloqueio → BLOQUEIO standalone, sem fusão"""
+        """Score acima do limiar com bloqueio → BLOQUEIO standalone."""
         update = Update(
             id="upd-test",
             numero=1,
@@ -796,7 +822,12 @@ class TestFusaoAlertas:
                     dia_projeto=6,
                 ),
             ],
-            score=DeliveryScore(dados_suficientes=True, valor=75, progresso_real=45, progresso_esperado=60),
+            score=DeliveryScore(
+                dados_suficientes=True,
+                valor=75,
+                progresso_real=45,
+                progresso_esperado=60,
+            ),
         )
 
         alertas = analisar_alertas(update, [])
@@ -805,7 +836,7 @@ class TestFusaoAlertas:
         assert alertas[0].categoria == CategoriaAlerta.BLOQUEIO_LINGUISTICO
 
     def test_silencio_nao_sofre_fusao(self):
-        """DESVIO + BLOQUEIO + SILENCIO → 2 alertas: [DESVIO_fusionado, SILENCIO]"""
+        """DESVIO+BLOQUEIO+SILENCIO → 2 alertas: [DESVIO_fusionado, SILENCIO]."""
         update_anterior = Update(
             id="upd-1",
             numero=1,
@@ -830,7 +861,12 @@ class TestFusaoAlertas:
                     dia_projeto=6,
                 ),
             ],
-            score=DeliveryScore(dados_suficientes=True, valor=40, progresso_real=0, progresso_esperado=60),
+            score=DeliveryScore(
+                dados_suficientes=True,
+                valor=40,
+                progresso_real=0,
+                progresso_esperado=60,
+            ),
         )
 
         alertas = analisar_alertas(update_atual, [update_anterior])

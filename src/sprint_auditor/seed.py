@@ -9,7 +9,10 @@ from sprint_auditor.modelos import (
 
 
 def carregar_projeto_seed() -> Projeto:
-    """Retorna o projeto sintético 'Alpha Corp' com 4 updates: desvio, bloqueio e recovery parcial."""
+    """Retorna o projeto sintético 'Alpha Corp' com 4 updates.
+
+    Updates: desvio, bloqueio e recovery parcial.
+    """
 
     artefato_u1_board = Artefato(
         id="art-u1-board",
