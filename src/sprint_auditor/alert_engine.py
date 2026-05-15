@@ -12,7 +12,7 @@ from sprint_auditor.modelos import (
 from sprint_auditor.template_fases import fase_do_dia
 
 LIMIAR_DESVIO: int = 70
-LIMIAR_SILENCIO: int = 2
+LIMIAR_SILENCIO: int = 4
 
 TEMPLATE_HIPOTESE: str = (
     "Fase {fase} travada em {progresso_real}% no dia {dia}. "

@@ -622,7 +622,7 @@ class TestDetectarSilencio:
     """Testes do detector SILENCIO (T07)"""
 
     def test_gap_acima_limiar_dispara(self):
-        """Gap de 3 dias (> limiar 2) deve disparar SILENCIO"""
+        """Gap de 5 dias (> limiar 4) deve disparar SILENCIO"""
         update_anterior = Update(
             id="upd-1",
             numero=1,
@@ -632,7 +632,7 @@ class TestDetectarSilencio:
         update_atual = Update(
             id="upd-2",
             numero=2,
-            dia_projeto=6,
+            dia_projeto=8,
             artefatos=[],
         )
 
@@ -641,10 +641,10 @@ class TestDetectarSilencio:
         assert alerta is not None
         assert alerta.categoria == CategoriaAlerta.SILENCIO
         assert alerta.artefato_fonte_id == "sistema"
-        assert alerta.trecho_fonte == "Sem update há 3 dias (último: dia 3)"
+        assert alerta.trecho_fonte == "Sem update há 5 dias (último: dia 3)"
 
     def test_gap_igual_limiar_nao_dispara(self):
-        """Gap de 2 dias (= limiar, não >) não deve disparar"""
+        """Gap de 4 dias (= novo limiar, não >) não deve disparar"""
         update_anterior = Update(
             id="upd-1",
             numero=1,
@@ -654,7 +654,7 @@ class TestDetectarSilencio:
         update_atual = Update(
             id="upd-2",
             numero=2,
-            dia_projeto=5,
+            dia_projeto=7,
             artefatos=[],
         )
 
@@ -692,14 +692,14 @@ class TestDetectarSilencio:
         update_3 = Update(
             id="upd-3",
             numero=3,
-            dia_projeto=9,
+            dia_projeto=10,
             artefatos=[],
         )
 
         alerta = _detectar_silencio(update_3, [update_1, update_2])
 
         assert alerta is not None
-        assert "4 dias" in alerta.trecho_fonte
+        assert "5 dias" in alerta.trecho_fonte
         assert "último: dia 5" in alerta.trecho_fonte
 
 
@@ -846,19 +846,19 @@ class TestFusaoAlertas:
         update_atual = Update(
             id="upd-2",
             numero=2,
-            dia_projeto=6,
+            dia_projeto=8,
             artefatos=[
                 Artefato(
                     id="art-board",
                     tipo=TipoArtefato.BOARD,
                     conteudo="[✗] Tarefa",
-                    dia_projeto=6,
+                    dia_projeto=8,
                 ),
                 Artefato(
                     id="art-trans",
                     tipo=TipoArtefato.TRANSCRICAO,
                     conteudo="Bloqueado",
-                    dia_projeto=6,
+                    dia_projeto=8,
                 ),
             ],
             score=DeliveryScore(
