@@ -178,26 +178,40 @@ def _formatar_historico(updates: list[Update]) -> str:
     Formato:
         Histórico de Delivery Score:
           Update #1 (Dia  3): ████████░░  83/100
-          Update #2 (Dia  6): ░░░░░░░░░░   0/100  ⚠
+          Update #2 (Dia  6): ░░░░░░░░░░   0/100  ↘ ⚠
           Update #3 (Dia  9): sem dados suficientes
 
     updates: já deve estar em ordem crescente de numero.
     Retorna string multiline sem trailing newline.
+    T08: adiciona setas de tendência (↗ ↘ →) quando há score anterior válido.
     """
     linhas = ["Histórico de Delivery Score:"]
+    score_anterior: int | None = None
 
     for update in updates:
         dia_str = f"{update.dia_projeto:2d}"
 
         if update.score is None or not update.score.dados_suficientes:
             linha = f"  Update #{update.numero} (Dia {dia_str}): sem dados suficientes"
+            score_anterior = None
         else:
             barra = _formatar_barra(update.score.valor)
             valor_str = f"{update.score.valor:3d}"
             linha = f"  Update #{update.numero} (Dia {dia_str}): {barra}  {valor_str}/100"
 
+            if score_anterior is not None:
+                if update.score.valor > score_anterior:
+                    tendencia = "↗"
+                elif update.score.valor < score_anterior:
+                    tendencia = "↘"
+                else:
+                    tendencia = "→"
+                linha += f"  {tendencia}"
+
             if update.alertas:
-                linha += "  ⚠"
+                linha += " ⚠"
+
+            score_anterior = update.score.valor
 
         linhas.append(linha)
 
