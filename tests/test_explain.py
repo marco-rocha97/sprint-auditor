@@ -26,13 +26,14 @@ class TestDecomporScore:
         assert "ABAIXO DO LIMIAR" in output
 
     def test_update_no_trilho(self):
-        """Update #1 com score=83 → output contém NO TRILHO"""
+        """Update #1 com score=83 e sem alertas → output contém NO TRILHO"""
         projeto = carregar_projeto_seed()
         update_1 = projeto.updates[0]
 
         resultado_ingestao = ingerir_artefatos(update_1.artefatos)
         score = calcular_delivery_score(resultado_ingestao, dia=update_1.dia_projeto)
         update_1.score = score
+        update_1.alertas = []
 
         output = decompor_score(update_1)
 
@@ -65,6 +66,56 @@ class TestDecomporScore:
         output = decompor_score(update)
 
         assert "Erro" in output
+
+    def test_update_score_acima_limiar_com_alertas_em_alerta(self):
+        """T08-F: update com score ≥ 70 e alertas → status EM ALERTA"""
+        from sprint_auditor.modelos import (
+            Alerta,
+            Artefato,
+            CategoriaAlerta,
+            Fase,
+            NivelConfianca,
+            TipoArtefato,
+        )
+
+        update = Update(
+            id="upd-test",
+            numero=3,
+            dia_projeto=9,
+            artefatos=[
+                Artefato(
+                    id="art-trans",
+                    tipo=TipoArtefato.TRANSCRICAO,
+                    conteudo="aguardando aprovação",
+                    dia_projeto=9,
+                )
+            ],
+            score=DeliveryScore(
+                dados_suficientes=True,
+                valor=75,
+                progresso_real=50,
+                progresso_esperado=60,
+            ),
+            alertas=[
+                Alerta(
+                    categoria=CategoriaAlerta.BLOQUEIO_LINGUISTICO,
+                    fase=Fase.DESENVOLVIMENTO,
+                    dia_projeto=9,
+                    gap_pp=None,
+                    causa_provavel="Bloqueio identificado",
+                    hipotese_causal="Bloqueio externo",
+                    nivel_confianca=NivelConfianca.MEDIO,
+                    acao_sugerida="Escalar",
+                    artefato_fonte_id="art-trans",
+                    trecho_fonte="aguardando aprovação",
+                )
+            ],
+        )
+
+        output = decompor_score(update)
+
+        assert "EM ALERTA" in output
+        assert "NO TRILHO" not in output
 
 
 class TestMainExplain:
