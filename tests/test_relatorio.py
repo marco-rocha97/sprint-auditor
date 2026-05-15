@@ -556,7 +556,7 @@ class TestGerarRelatorio:
         relatorio = gerar_relatorio(projeto)
 
         historico_section = relatorio[relatorio.index("Histórico de Delivery Score:") :]
-        linhas = [l for l in historico_section.split("\n") if "Update #2" in l]
+        linhas = [line for line in historico_section.split("\n") if "Update #2" in line]
 
         assert len(linhas) > 0
         assert "↘" in linhas[0]
@@ -605,7 +605,7 @@ class TestGerarRelatorio:
         relatorio = gerar_relatorio(projeto)
 
         historico_section = relatorio[relatorio.index("Histórico de Delivery Score:") :]
-        linhas = [l for l in historico_section.split("\n") if "Update #2" in l]
+        linhas = [line for line in historico_section.split("\n") if "Update #2" in line]
 
         assert len(linhas) > 0
         assert "↗" in linhas[0]
@@ -654,7 +654,7 @@ class TestGerarRelatorio:
         relatorio = gerar_relatorio(projeto)
 
         historico_section = relatorio[relatorio.index("Histórico de Delivery Score:") :]
-        linhas = [l for l in historico_section.split("\n") if "Update #2" in l]
+        linhas = [line for line in historico_section.split("\n") if "Update #2" in line]
 
         assert len(linhas) > 0
         assert "→" in linhas[0]
@@ -699,7 +699,7 @@ class TestGerarRelatorio:
         relatorio = gerar_relatorio(projeto)
 
         historico_section = relatorio[relatorio.index("Histórico de Delivery Score:") :]
-        linhas_u3 = [l for l in historico_section.split("\n") if "Update #3" in l]
+        linhas_u3 = [line for line in historico_section.split("\n") if "Update #3" in line]
 
         assert len(linhas_u3) > 0
         linha_u3 = linhas_u3[0]
