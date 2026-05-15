@@ -622,7 +622,7 @@ class TestDetectarSilencio:
     """Testes do detector SILENCIO (T07)"""
 
     def test_gap_acima_limiar_dispara(self):
-        """Gap de 3 dias (> limiar 2) deve disparar SILENCIO"""
+        """Gap de 5 dias (> limiar 4) deve disparar SILENCIO"""
         update_anterior = Update(
             id="upd-1",
             numero=1,
@@ -632,7 +632,7 @@ class TestDetectarSilencio:
         update_atual = Update(
             id="upd-2",
             numero=2,
-            dia_projeto=6,
+            dia_projeto=8,
             artefatos=[],
         )
 
@@ -641,10 +641,10 @@ class TestDetectarSilencio:
         assert alerta is not None
         assert alerta.categoria == CategoriaAlerta.SILENCIO
         assert alerta.artefato_fonte_id == "sistema"
-        assert alerta.trecho_fonte == "Sem update há 3 dias (último: dia 3)"
+        assert alerta.trecho_fonte == "Sem update há 5 dias (último: dia 3)"
 
     def test_gap_igual_limiar_nao_dispara(self):
-        """Gap de 2 dias (= limiar, não >) não deve disparar"""
+        """Gap de 4 dias (= novo limiar, não >) não deve disparar"""
         update_anterior = Update(
             id="upd-1",
             numero=1,
@@ -654,7 +654,7 @@ class TestDetectarSilencio:
         update_atual = Update(
             id="upd-2",
             numero=2,
-            dia_projeto=5,
+            dia_projeto=7,
             artefatos=[],
         )
 
@@ -692,15 +692,54 @@ class TestDetectarSilencio:
         update_3 = Update(
             id="upd-3",
             numero=3,
-            dia_projeto=9,
+            dia_projeto=10,
             artefatos=[],
         )
 
         alerta = _detectar_silencio(update_3, [update_1, update_2])
 
         assert alerta is not None
-        assert "4 dias" in alerta.trecho_fonte
+        assert "5 dias" in alerta.trecho_fonte
         assert "último: dia 5" in alerta.trecho_fonte
+
+    def test_gap_4_dias_nao_dispara_novo_boundary(self):
+        """T08-D: gap=4 não dispara (novo boundary)"""
+        update_anterior = Update(
+            id="upd-1",
+            numero=1,
+            dia_projeto=3,
+            artefatos=[],
+        )
+        update_atual = Update(
+            id="upd-2",
+            numero=2,
+            dia_projeto=7,
+            artefatos=[],
+        )
+
+        alerta = _detectar_silencio(update_atual, [update_anterior])
+
+        assert alerta is None
+
+    def test_gap_5_dias_dispara_acima_novo_limiar(self):
+        """T08-E: gap=5 dispara (acima do novo limiar)"""
+        update_anterior = Update(
+            id="upd-1",
+            numero=1,
+            dia_projeto=3,
+            artefatos=[],
+        )
+        update_atual = Update(
+            id="upd-2",
+            numero=2,
+            dia_projeto=8,
+            artefatos=[],
+        )
+
+        alerta = _detectar_silencio(update_atual, [update_anterior])
+
+        assert alerta is not None
+        assert alerta.categoria == CategoriaAlerta.SILENCIO
 
 
 class TestFusaoAlertas:
@@ -775,7 +814,7 @@ class TestFusaoAlertas:
         assert "bloqueado" in alertas[0].hipotese_causal.lower()
 
     def test_sem_fusao_quando_desvio_sem_bloqueio(self):
-        """Score baixo sem bloqueio → DESVIO com hipotese_causal=None."""
+        """Score baixo sem bloqueio → DESVIO com hipotese_causal preenchida (T08)."""
         update = Update(
             id="upd-test",
             numero=1,
@@ -800,10 +839,11 @@ class TestFusaoAlertas:
 
         assert len(alertas) == 1
         assert alertas[0].categoria == CategoriaAlerta.DESVIO_LIMIAR
-        assert alertas[0].hipotese_causal is None
+        assert alertas[0].hipotese_causal is not None
+        assert "% de progresso real" in alertas[0].hipotese_causal
 
     def test_sem_fusao_quando_bloqueio_sem_desvio(self):
-        """Score acima do limiar com bloqueio → BLOQUEIO standalone."""
+        """Score acima do limiar com bloqueio → BLOQUEIO standalone com hipotese (T08)."""
         update = Update(
             id="upd-test",
             numero=1,
@@ -834,6 +874,8 @@ class TestFusaoAlertas:
 
         assert len(alertas) == 1
         assert alertas[0].categoria == CategoriaAlerta.BLOQUEIO_LINGUISTICO
+        assert alertas[0].hipotese_causal is not None
+        assert "dependência externa não resolvida" in alertas[0].hipotese_causal
 
     def test_silencio_nao_sofre_fusao(self):
         """DESVIO+BLOQUEIO+SILENCIO → 2 alertas: [DESVIO_fusionado, SILENCIO]."""
@@ -846,19 +888,19 @@ class TestFusaoAlertas:
         update_atual = Update(
             id="upd-2",
             numero=2,
-            dia_projeto=6,
+            dia_projeto=8,
             artefatos=[
                 Artefato(
                     id="art-board",
                     tipo=TipoArtefato.BOARD,
                     conteudo="[✗] Tarefa",
-                    dia_projeto=6,
+                    dia_projeto=8,
                 ),
                 Artefato(
                     id="art-trans",
                     tipo=TipoArtefato.TRANSCRICAO,
                     conteudo="Bloqueado",
-                    dia_projeto=6,
+                    dia_projeto=8,
                 ),
             ],
             score=DeliveryScore(
@@ -877,3 +919,106 @@ class TestFusaoAlertas:
         assert CategoriaAlerta.SILENCIO in categorias
         assert alertas[0].hipotese_causal is not None
         assert alertas[1].categoria == CategoriaAlerta.SILENCIO
+
+    def test_hipotese_causal_bloqueio_standalone_contem_trecho(self):
+        """T08-A: hipotese_causal de BLOQUEIO standalone contém trecho casado"""
+        update = Update(
+            id="upd-test",
+            numero=1,
+            dia_projeto=9,
+            artefatos=[
+                Artefato(
+                    id="art-trans",
+                    tipo=TipoArtefato.TRANSCRICAO,
+                    conteudo="Squad ainda aguardando aprovação do departamento",
+                    dia_projeto=9,
+                ),
+                Artefato(
+                    id="art-board",
+                    tipo=TipoArtefato.BOARD,
+                    conteudo="[✓] Tarefas da fase",
+                    dia_projeto=9,
+                ),
+            ],
+            score=DeliveryScore(dados_suficientes=True, valor=75),
+        )
+
+        alertas = analisar_alertas(update, [])
+
+        assert len(alertas) == 1
+        assert alertas[0].categoria == CategoriaAlerta.BLOQUEIO_LINGUISTICO
+        assert alertas[0].hipotese_causal is not None
+        assert "aguardando aprovação" in alertas[0].hipotese_causal
+
+    def test_hipotese_causal_desvio_standalone_contem_dados_score(self):
+        """T08-B: hipotese_causal de DESVIO standalone contém dados de score"""
+        update = Update(
+            id="upd-test",
+            numero=1,
+            dia_projeto=6,
+            artefatos=[
+                Artefato(
+                    id="art-board",
+                    tipo=TipoArtefato.BOARD,
+                    conteudo="[✗] Tarefa A, [✗] Tarefa B",
+                    dia_projeto=6,
+                ),
+                Artefato(
+                    id="art-trans",
+                    tipo=TipoArtefato.TRANSCRICAO,
+                    conteudo="Progresso normal, nenhum bloqueio",
+                    dia_projeto=6,
+                ),
+            ],
+            score=DeliveryScore(
+                dados_suficientes=True,
+                valor=40,
+                progresso_real=10,
+                progresso_esperado=70,
+            ),
+        )
+
+        alertas = analisar_alertas(update, [])
+
+        assert len(alertas) == 1
+        assert alertas[0].categoria == CategoriaAlerta.DESVIO_LIMIAR
+        assert alertas[0].hipotese_causal is not None
+        assert "10%" in alertas[0].hipotese_causal
+        assert "70%" in alertas[0].hipotese_causal
+
+    def test_fusao_sobrescreve_hipotese_desvio_simples(self):
+        """T08-C: fusão sobrescreve hipotese_causal do DESVIO simples com template rico"""
+        update = Update(
+            id="upd-test",
+            numero=1,
+            dia_projeto=6,
+            artefatos=[
+                Artefato(
+                    id="art-board",
+                    tipo=TipoArtefato.BOARD,
+                    conteudo="[✗] Tarefa A",
+                    dia_projeto=6,
+                ),
+                Artefato(
+                    id="art-trans",
+                    tipo=TipoArtefato.TRANSCRICAO,
+                    conteudo="Bloqueado por falta de acesso",
+                    dia_projeto=6,
+                ),
+            ],
+            score=DeliveryScore(
+                dados_suficientes=True,
+                valor=40,
+                progresso_real=0,
+                progresso_esperado=60,
+            ),
+        )
+
+        alertas = analisar_alertas(update, [])
+
+        assert len(alertas) == 1
+        assert alertas[0].categoria == CategoriaAlerta.DESVIO_LIMIAR
+        assert alertas[0].hipotese_causal is not None
+        assert "dependência externa — sinalizado na transcrição" in alertas[0].hipotese_causal
+        assert "bloqueado" in alertas[0].hipotese_causal.lower()
+        assert "squad com capacidade reduzida" not in alertas[0].hipotese_causal

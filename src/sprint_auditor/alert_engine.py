@@ -12,13 +12,26 @@ from sprint_auditor.modelos import (
 from sprint_auditor.template_fases import fase_do_dia
 
 LIMIAR_DESVIO: int = 70
-LIMIAR_SILENCIO: int = 2
+LIMIAR_SILENCIO: int = 4
 
 TEMPLATE_HIPOTESE: str = (
     "Fase {fase} travada em {progresso_real}% no dia {dia}. "
     "Hipótese: dependência externa — sinalizado na transcrição "
     "('{trecho_bloqueio}'). "
     "Escalar para o FDE Lead pedir intervenção do sponsor do cliente."
+)
+
+TEMPLATE_HIPOTESE_BLOQUEIO_SIMPLES: str = (
+    "Bloqueio identificado na transcrição: '{trecho_bloqueio}'. "
+    "Hipótese: dependência externa não resolvida. "
+    "Escalar para o FDE Lead pedir desbloqueio."
+)
+
+TEMPLATE_HIPOTESE_DESVIO_SIMPLES: str = (
+    "Fase {fase} com apenas {progresso_real}% de progresso real contra "
+    "{progresso_esperado}% esperado no dia {dia}. "
+    "Hipótese: squad com capacidade reduzida ou bloqueio não declarado. "
+    "Investigar com FDE Lead."
 )
 
 PADROES_BLOQUEIO: list[str] = [
@@ -93,12 +106,20 @@ def _detectar_desvio_limiar(update: Update) -> Optional[Alerta]:
         f"escalonamento para o FDE Lead"
     )
 
+    hipotese = TEMPLATE_HIPOTESE_DESVIO_SIMPLES.format(
+        fase=fase.value,
+        progresso_real=update.score.progresso_real,
+        progresso_esperado=update.score.progresso_esperado,
+        dia=update.dia_projeto,
+    )
+
     return Alerta(
         categoria=CategoriaAlerta.DESVIO_LIMIAR,
         fase=fase,
         dia_projeto=update.dia_projeto,
         gap_pp=gap_pp,
         causa_provavel=causa_provavel,
+        hipotese_causal=hipotese,
         nivel_confianca=NivelConfianca.ALTO,
         acao_sugerida=acao_sugerida,
         artefato_fonte_id=artefato_fonte.id,
@@ -202,12 +223,17 @@ def _detectar_bloqueio_linguistico(update: Update) -> Optional[Alerta]:
 
                 causa_provavel = f"Sinal de bloqueio identificado na transcrição: '{trecho_casado}'"
 
+                hipotese = TEMPLATE_HIPOTESE_BLOQUEIO_SIMPLES.format(
+                    trecho_bloqueio=trecho_casado
+                )
+
                 return Alerta(
                     categoria=CategoriaAlerta.BLOQUEIO_LINGUISTICO,
                     fase=fase,
                     dia_projeto=update.dia_projeto,
                     gap_pp=None,
                     causa_provavel=causa_provavel,
+                    hipotese_causal=hipotese,
                     nivel_confianca=NivelConfianca.MEDIO,
                     acao_sugerida="Bloqueio externo identificado → escalar para o FDE Lead",
                     artefato_fonte_id=artefato.id,

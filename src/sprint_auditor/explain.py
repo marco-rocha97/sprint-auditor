@@ -33,7 +33,13 @@ def decompor_score(update: Update) -> str:
 
     gap_pp = max(0, update.score.progresso_esperado - update.score.progresso_real)
     limiar_desvio = 70
-    status = "✓ NO TRILHO" if update.score.valor >= limiar_desvio else "⚠ ABAIXO DO LIMIAR"
+
+    if update.score.valor < limiar_desvio:
+        status = "⚠ ABAIXO DO LIMIAR"
+    elif update.alertas:
+        status = "⚡ EM ALERTA"
+    else:
+        status = "✓ NO TRILHO"
 
     num_alertas = len(update.alertas)
 

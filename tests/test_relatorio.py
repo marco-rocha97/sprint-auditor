@@ -513,6 +513,198 @@ class TestGerarRelatorio:
 
         assert "Projeto no trilho — nenhum desvio detectado." in relatorio
 
+    def test_historico_seta_decrescente_para_score_em_queda(self):
+        """T08-G: seta ↘ exibida quando score decresce"""
+        alerta = Alerta(
+            categoria=CategoriaAlerta.DESVIO_LIMIAR,
+            fase=Fase.CONFIGURACAO,
+            dia_projeto=6,
+            gap_pp=60.0,
+            causa_provavel="Score baixo",
+            nivel_confianca=NivelConfianca.ALTO,
+            acao_sugerida="Investigar",
+            artefato_fonte_id="art-test",
+            trecho_fonte="Teste",
+        )
+
+        updates = [
+            Update(
+                id="upd-1",
+                numero=1,
+                dia_projeto=3,
+                artefatos=[],
+                score=DeliveryScore(dados_suficientes=True, valor=83),
+                alertas=[],
+            ),
+            Update(
+                id="upd-2",
+                numero=2,
+                dia_projeto=6,
+                artefatos=[],
+                score=DeliveryScore(dados_suficientes=True, valor=40),
+                alertas=[alerta],
+            ),
+        ]
+
+        projeto = Projeto(
+            id="proj-test",
+            nome="Test Project",
+            data_kickoff=datetime(2026, 4, 28, 9, 0, 0, tzinfo=timezone.utc),
+            updates=updates,
+        )
+
+        relatorio = gerar_relatorio(projeto)
+
+        historico_section = relatorio[relatorio.index("Histórico de Delivery Score:") :]
+        linhas = [line for line in historico_section.split("\n") if "Update #2" in line]
+
+        assert len(linhas) > 0
+        assert "↘" in linhas[0]
+        assert "⚠" in linhas[0]
+
+    def test_historico_seta_crescente_para_score_em_subida(self):
+        """T08-H: seta ↗ exibida quando score sobe"""
+        alerta = Alerta(
+            categoria=CategoriaAlerta.BLOQUEIO_LINGUISTICO,
+            fase=Fase.DESENVOLVIMENTO,
+            dia_projeto=9,
+            gap_pp=None,
+            causa_provavel="Bloqueio detectado",
+            nivel_confianca=NivelConfianca.MEDIO,
+            acao_sugerida="Escalar",
+            artefato_fonte_id="art-test",
+            trecho_fonte="Teste",
+        )
+
+        updates = [
+            Update(
+                id="upd-1",
+                numero=1,
+                dia_projeto=3,
+                artefatos=[],
+                score=DeliveryScore(dados_suficientes=True, valor=40),
+                alertas=[],
+            ),
+            Update(
+                id="upd-2",
+                numero=2,
+                dia_projeto=9,
+                artefatos=[],
+                score=DeliveryScore(dados_suficientes=True, valor=75),
+                alertas=[alerta],
+            ),
+        ]
+
+        projeto = Projeto(
+            id="proj-test",
+            nome="Test Project",
+            data_kickoff=datetime(2026, 4, 28, 9, 0, 0, tzinfo=timezone.utc),
+            updates=updates,
+        )
+
+        relatorio = gerar_relatorio(projeto)
+
+        historico_section = relatorio[relatorio.index("Histórico de Delivery Score:") :]
+        linhas = [line for line in historico_section.split("\n") if "Update #2" in line]
+
+        assert len(linhas) > 0
+        assert "↗" in linhas[0]
+        assert "⚠" in linhas[0]
+
+    def test_historico_seta_estavel_para_score_constante(self):
+        """T08-I: seta → exibida quando score se mantém"""
+        alerta = Alerta(
+            categoria=CategoriaAlerta.BLOQUEIO_LINGUISTICO,
+            fase=Fase.DESENVOLVIMENTO,
+            dia_projeto=9,
+            gap_pp=None,
+            causa_provavel="Bloqueio detectado",
+            nivel_confianca=NivelConfianca.MEDIO,
+            acao_sugerida="Escalar",
+            artefato_fonte_id="art-test",
+            trecho_fonte="Teste",
+        )
+
+        updates = [
+            Update(
+                id="upd-1",
+                numero=1,
+                dia_projeto=3,
+                artefatos=[],
+                score=DeliveryScore(dados_suficientes=True, valor=75),
+                alertas=[],
+            ),
+            Update(
+                id="upd-2",
+                numero=2,
+                dia_projeto=9,
+                artefatos=[],
+                score=DeliveryScore(dados_suficientes=True, valor=75),
+                alertas=[alerta],
+            ),
+        ]
+
+        projeto = Projeto(
+            id="proj-test",
+            nome="Test Project",
+            data_kickoff=datetime(2026, 4, 28, 9, 0, 0, tzinfo=timezone.utc),
+            updates=updates,
+        )
+
+        relatorio = gerar_relatorio(projeto)
+
+        historico_section = relatorio[relatorio.index("Histórico de Delivery Score:") :]
+        linhas = [line for line in historico_section.split("\n") if "Update #2" in line]
+
+        assert len(linhas) > 0
+        assert "→" in linhas[0]
+        assert "⚠" in linhas[0]
+
+    def test_historico_dados_insuficientes_reseta_seta(self):
+        """T08-J: dados_suficientes=False reseta seta do próximo update"""
+        updates = [
+            Update(
+                id="upd-1",
+                numero=1,
+                dia_projeto=3,
+                artefatos=[],
+                score=DeliveryScore(dados_suficientes=True, valor=83),
+                alertas=[],
+            ),
+            Update(
+                id="upd-2",
+                numero=2,
+                dia_projeto=6,
+                artefatos=[],
+                score=DeliveryScore(dados_suficientes=False, valor=None),
+                alertas=[],
+            ),
+            Update(
+                id="upd-3",
+                numero=3,
+                dia_projeto=9,
+                artefatos=[],
+                score=DeliveryScore(dados_suficientes=True, valor=75),
+                alertas=[],
+            ),
+        ]
+
+        projeto = Projeto(
+            id="proj-test",
+            nome="Test Project",
+            data_kickoff=datetime(2026, 4, 28, 9, 0, 0, tzinfo=timezone.utc),
+            updates=updates,
+        )
+
+        relatorio = gerar_relatorio(projeto)
+
+        historico_section = relatorio[relatorio.index("Histórico de Delivery Score:") :]
+        linhas_u3 = [line for line in historico_section.split("\n") if "Update #3" in line]
+
+        assert len(linhas_u3) > 0
+        linha_u3 = linhas_u3[0]
+        assert "↗" not in linha_u3 and "↘" not in linha_u3 and "→" not in linha_u3
+
 
 class TestFormatar:
     """Testes de funções de formatação interna"""
@@ -589,13 +781,15 @@ class TestSeedRastreabilidade:
         assert "aguardando aprovação" in relatorio
 
     def test_seed_pipeline_u1_no_trilho_u2_u3_com_desvio(self):
-        """Seed: U1 no trilho, U2/U3 com DESVIO_LIMIAR"""
+        """Seed: U1 no trilho, U2 com DESVIO_LIMIAR, U3 com BLOQUEIO_LINGUISTICO"""
         projeto = carregar_projeto_seed()
 
+        updates_com_anteriores = []
         for update in projeto.updates:
             resultado = ingerir_artefatos(update.artefatos)
             update.score = calcular_delivery_score(resultado, dia=update.dia_projeto)
-            update.alertas = analisar_alertas(update, [])
+            update.alertas = analisar_alertas(update, updates_com_anteriores)
+            updates_com_anteriores.append(update)
 
         relatorio = gerar_relatorio(projeto)
 
@@ -605,4 +799,4 @@ class TestSeedRastreabilidade:
 
         assert "Projeto no trilho" in u1_section
         assert "DESVIO_LIMIAR" in u2_section
-        assert "DESVIO_LIMIAR" in u3_section
+        assert "BLOQUEIO_LINGUISTICO" in u3_section
